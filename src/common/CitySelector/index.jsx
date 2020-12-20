@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useState, useMemo, useEffect, useCallback, memo } from 'react'
 import classnames from 'classnames'
 import './index.css'
 
@@ -64,6 +64,51 @@ function CityList(props) {
     </div>
   )
 }
+
+// 搜索
+
+const SuggestItem = memo(function SuggestItem(props) {
+  const { name, onClick } = props
+  return (
+    <li className='city-suggest-li' onClick={() => onClick(name)}>{name}</li>
+  )
+})
+
+const SuggestList = memo(function SuggestList(props) {
+  const { searchKey, onSelect } = props
+  const [result, setResult] = useState([])
+
+  useEffect(() => {
+    fetch('/rest/search?key=' + encodeURIComponent(searchKey))
+      .then(res => res.json())
+      .then(data => {
+        const { result, searchKey: skey } = data
+        if (searchKey === skey) {
+          setResult(result)
+        }
+      })
+  })
+
+  const searchResult = result.length ? result : [{ display: searchKey }]
+
+  return (
+    <div className='city-suggest'>
+      <ul className='city-suggest-ul'>
+        {
+          searchResult.map(item => {
+            return (
+              <SuggestItem
+                key={item.display}
+                name={item.display}
+                onClick={onSelect}
+              />
+            )
+          })
+        }
+      </ul>
+    </div>
+  )
+})
 
 export default function Index(props) {
   const {
@@ -134,6 +179,13 @@ export default function Index(props) {
       </div>
       {
         outputCitySelection()
+      }
+      {
+        Boolean(key) &&
+        <SuggestList
+          onSelect={onSelect}
+          searchKey={key}
+        />
       }
     </div>
   )

@@ -1,7 +1,15 @@
 import React, { useCallback, useMemo } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { exchangeFromTo, showCitySelector, hideCitySelector, fetchCityData } from './action'
+import {
+    exchangeFromTo,
+    showCitySelector,
+    setSelectedCity,
+    hideCitySelector,
+    fetchCityData,
+    showDateSelector,
+    hideDateSelector
+} from './action'
 import './App.css'
 import {
     DepartDate,
@@ -11,6 +19,7 @@ import {
 } from './pages'
 import Header from '../common/Header'
 import CitySelector from '../common/CitySelector'
+import DateSelector from '../common/DateSelector'
 
 function App(props) {
     const {
@@ -19,7 +28,9 @@ function App(props) {
         cityData,
         isLoadingCityData,
         to,
-        dispatch
+        dispatch,
+        departDate,
+        isDateSelectorVisible
     } = props
     const onBack = useCallback(() => {
         window.history.back()
@@ -35,7 +46,20 @@ function App(props) {
     const doCitySelectorCbs = useMemo(() => {
         return bindActionCreators({
             onBack: hideCitySelector,
-            fetchCityData
+            fetchCityData,
+            onSelect: setSelectedCity
+        }, dispatch)
+    }, [])
+
+    const doDepartDate = useMemo(() => {
+        return bindActionCreators({
+            onClick: showDateSelector
+        }, dispatch)
+    }, [])
+
+    const doDateSelector = useMemo(() => {
+        return bindActionCreators({
+            onBack: hideDateSelector,
         }, dispatch)
     }, [])
 
@@ -50,7 +74,10 @@ function App(props) {
                     to={to}
                     {...doCb}
                 />
-                <DepartDate />
+                <DepartDate
+                    time={departDate}
+                    {...doDepartDate}
+                />
                 <HighSpeed />
                 <Submit />
                 <CitySelector
@@ -58,6 +85,10 @@ function App(props) {
                     cityData={cityData}
                     isLoading={isLoadingCityData}
                     {...doCitySelectorCbs}
+                />
+                <DateSelector
+                    show={isDateSelectorVisible}
+                    {...doDateSelector}
                 />
             </form>
         </div>
